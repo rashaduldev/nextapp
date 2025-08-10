@@ -1,8 +1,17 @@
-import Homepage from "@/components/Homepage";
-import Sidebar from "@/components/sidebar";
+import ClientShell from '@/components/ClientShell'; // we'll create a client wrapper file below
+import { fetchThemeApiData } from '@/lib/api';
 
-export default function Home() {
+export default async function Page() {
+  let apiData = [];
+  try {
+    apiData = await fetchThemeApiData();
+  } catch (err) {
+    console.error('Server fetch failed', err);
+  }  
+
   return (
-    <Homepage/>
+    <div className="flex gap-6">
+      <ClientShell initial={apiData} />
+    </div>
   );
 }
