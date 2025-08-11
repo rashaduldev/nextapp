@@ -4,16 +4,16 @@ import Toolbar from "./Toolbar";
 import ThemeGrid from "./ThemeGrid";
 import Sidebar from "./sidebar";
 
-export default function ClientShell({ initial = [] }) {
+export default function ClientShell({ apiData = [] }) {
   const [selected, setSelected] = useState(new Set());
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("price_asc"); // default price
+  const [sort, setSort] = useState("price");
 
   // Build filter lists with counts
   const filterLists = useMemo(() => {
     const buildCountMap = (field) => {
       const map = new Map();
-      initial.forEach((item) => {
+      apiData.forEach((item) => {
         const values = item.data?.[field] || [];
         if (Array.isArray(values)) {
           values.forEach((val) => {
@@ -37,7 +37,7 @@ export default function ClientShell({ initial = [] }) {
       cms: buildCountMap("cms"),
       category: buildCountMap("category"),
     };
-  }, [initial]);
+  }, [apiData]);
 
   // Toggle filter selection
   function toggle(option) {
@@ -51,7 +51,9 @@ export default function ClientShell({ initial = [] }) {
 
   // Filter, search, and sort the items
   const filtered = useMemo(() => {
-    let arr = initial.slice();
+    let arr = apiData.slice(1,100);
+    console.log(arr);
+    
 
     // Apply filters
     if (selected.size > 0) {
@@ -68,20 +70,16 @@ export default function ClientShell({ initial = [] }) {
       });
 
       arr = arr.filter((item) => {
-        const matchCss =
-          selectedByField.css.size === 0 ||
+        const matchCss = selectedByField.css.size === 0 ||
           (item.data?.css || []).some((v) => selectedByField.css.has(v));
 
-        const matchUi =
-          selectedByField.ui.size === 0 ||
+        const matchUi = selectedByField.ui.size === 0 ||
           (item.data?.ui || []).some((v) => selectedByField.ui.has(v));
 
-        const matchCms =
-          selectedByField.cms.size === 0 ||
+        const matchCms = selectedByField.cms.size === 0 ||
           (item.data?.cms || []).some((v) => selectedByField.cms.has(v));
 
-        const matchCategory =
-          selectedByField.category.size === 0 ||
+        const matchCategory = selectedByField.category.size === 0 ||
           (item.data?.category || []).some((v) =>
             selectedByField.category.has(v)
           );
@@ -97,62 +95,44 @@ export default function ClientShell({ initial = [] }) {
         item.data?.title?.toLowerCase().includes(searchLower)
       );
     }
+// Apply sorting
+const [field] = sort.split(); 
+console.log(field);
 
-    // Apply sorting
-    const [field, direction] = sort.split("_"); // e.g. github_star_desc
 
-    arr.sort((a, b) => {
-      if (field === "name") {
-        return direction === "asc"
-          ? (a.data?.title || "").localeCompare(b.data?.title || "")
-          : (b.data?.title || "").localeCompare(a.data?.title || "");
-      } else {
-        const aVal = a.data?.[field];
-        const bVal = b.data?.[field];
-        const aNum =
-          typeof aVal === "number"
-            ? aVal
-            : aVal
-            ? parseFloat(aVal)
-            : -Infinity;
-        const bNum =
-          typeof bVal === "number"
-            ? bVal
-            : bVal
-            ? parseFloat(bVal)
-            : -Infinity;
-        return direction === "asc" ? aNum - bNum : bNum - aNum;
-      }
-    });
+arr.sort((a, b) => {
+  const aVal = a.data?.[field];
+  const bVal = b.data?.[field];
 
-    return arr;
-  }, [initial, selected, search, sort]);
+  if (field === "title" || field === "name") {
+    return (aVal || "").toString().localeCompare(bVal || "");
+  }
 
-  // Final sort field for ThemeGrid highlight
-const [fieldName] = sort.split("_asc"); 
-const [finalField] = fieldName.split("_desc") 
+  // Always descending for numeric fields
+  const aNum = typeof aVal === "number" ? aVal : aVal ? parseFloat(aVal) : -Infinity;
+  const bNum = typeof bVal === "number" ? bVal : bVal ? parseFloat(bVal) : -Infinity;
+  return bNum - aNum;
+});
+
+  return arr;
+  }, [apiData, selected, search, sort]);
+  
+  const [fieldName] = sort.split("_asc"); 
+  const [finalField] = fieldName.split("_desc") 
 
   return (
     <>
-      {/* Sidebar */}
-      <Sidebar
-        filterLists={filterLists}
-        selected={selected}
-        onToggle={toggle}
-      />
-
-      {/* Main content */}
+      <Sidebar filterLists={filterLists} selected={selected} onToggle={toggle}/>
       <main className="md:ml-64 min-h-screen p-6 w-[100%]">
         <div className="mb-4 flex items-center justify-between">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search themes..."
-            className="p-2 border rounded w-1/3"
+            className="p-2 border border-gray-100 focus:border-gray-200 rounded w-1/4"
           />
-          <Toolbar sort={sort} onSort={setSort} />
+          <Toolbar className="md:ml-64" sort={sort} onSort={setSort} />
         </div>
-
         <ThemeGrid
           items={filtered}
           loading={false}

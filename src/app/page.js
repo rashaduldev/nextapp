@@ -1,4 +1,4 @@
-import ClientShell from '@/components/ClientShell'; // we'll create a client wrapper file below
+import ClientShell from '@/components/ClientWrap'; // we'll create a client wrapper file below
 import { fetchThemeApiData } from '@/lib/api';
 
 export default async function Page() {
@@ -11,7 +11,7 @@ export default async function Page() {
 
   return (
     <div className="flex gap-6">
-      <ClientShell initial={apiData} />
+      <ClientShell apiData={apiData} />
     </div>
   );
 }

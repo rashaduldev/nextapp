@@ -3,20 +3,22 @@ import Image from 'next/image';
 import image from '../../public/card/dummy.png'
 import { FaGithub } from "react-icons/fa";
 
-export default function ThemeCard({ item = {}, highlightField  }) {
-  const hasData = Boolean(item.data);
+export default function ThemeCard({ item = {}, highlightField  }) { 
+  const apiData = Boolean(item.data);
   const previewSrc = item.preview || image;
   const title = item.data?.title || 'No Title';
   const description = item.data?.description || 'No description available.';
   const name = item.data.author || 'Author';
-  const highlightValue = item.data?.[highlightField] || "N/A";
-  const displayValue = item.data?.[highlightField] ?? "N/A";
+  const rawValue = item.data?.[highlightField];
+  const displayValue = rawValue && rawValue.toString().trim() !== ""
+      ? rawValue
+      : "N/A";
 
 
   return (
-    <article className="bg-white rounded-2xl shadow-md p-4 hover:shadow-xl hover:-translate-y-2 transition-transform duration-300 ease-in-out max-w-xs mx-auto">
+    <article className="bg-white rounded-2xl shadow-md p-4 hover:shadow-xl hover:-translate-y-2 transition-transform duration-300 ease-in-out max-w-xs mx-auto border border-gray-100">
       <div className="relative w-full h-48 rounded-md overflow-hidden mb-3 bg-gray-100">
-        {hasData ? (
+        {apiData ? (
           <Image
             src={previewSrc}
             alt={title}
@@ -35,15 +37,18 @@ export default function ThemeCard({ item = {}, highlightField  }) {
         {title}
       </h2>
       <p className="text-sm text-gray-600 mb-3 line-clamp-2">{description}</p>
-       {/* Show highlight field name and value */}
-      <p className="mt-2 text-sm text-gray-600">
+      <div className='flex justify-between items-center'>
+        <div>
+        <p className="mt-2 text-sm text-gray-600">
       {highlightField.replace(/_/g, " ").toUpperCase()}:{" "}
       <span className="font-semibold text-indigo-600">{displayValue}</span>
     </p>
       <h3 className="font-semibold text-gray-800 truncate" title={name}>
         {name}
       </h3>
-      <a href=""><FaGithub /></a>
+      </div>
+      <a href={item.data? item.data.github : "No live link"} target='_blank' className='text-xl'><FaGithub /></a>
+      </div>
     </article>
   );
 }

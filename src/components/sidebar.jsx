@@ -8,6 +8,7 @@ export default function Sidebar({
 }) {
   return (
     <aside className="fixed top-0 left-0 w-64 p-4 hidden md:block h-screen overflow-y-auto bg-gray-100 scrollbar-hide">
+      <h2 className="text-3xl text-center mb-5 font-semibold">Themes</h2>
       {Object.entries(filterLists).map(([filterName, options]) => (
         <div key={filterName} className="mb-6">
           <h4 className="text-lg font-semibold capitalize mb-2">
